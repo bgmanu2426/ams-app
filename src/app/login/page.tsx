@@ -3,8 +3,6 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { toast } from 'sonner'
-
 import {
     Form,
     FormControl,
@@ -23,6 +21,10 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
+import { passwordRegexPattern } from '@/lib/utilities';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { signIn } from 'next-auth/react';
 
 // Improved schema with additional validation rules
 const formSchema = z.object({
@@ -30,10 +32,12 @@ const formSchema = z.object({
     password: z
         .string()
         .min(6, { message: 'Password must be at least 6 characters long' })
-        .regex(/[a-zA-Z0-9]/, { message: 'Password must be alphanumeric' }),
+        .regex(passwordRegexPattern, { message: 'Password must be alphanumeric and 6 charecters long' }),
 })
 
 const LoginPage = () => {
+    const router = useRouter();
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -42,20 +46,35 @@ const LoginPage = () => {
         },
     })
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
-        try {
-            // Assuming an async login function
-            console.log(values)
-            toast(
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-                </pre>,
-            )
-        } catch (error) {
-            console.error('Form submission error', error)
-            toast.error('Failed to submit the form. Please try again.')
+    const { toast } = useToast();
+    const onSubmit = async (data: z.infer<typeof formSchema>) => {
+        const result = await signIn('credentials', {
+            redirect: false,
+            email: data.email,
+            password: data.password,
+        });
+
+        console.log(result);
+        if (result?.error) {
+            if (result.error === 'CredentialsSignin') {
+                toast({
+                    title: 'Login Failed',
+                    description: 'Incorrect username or password',
+                    variant: 'destructive',
+                });
+            } else {
+                toast({
+                    title: 'Error',
+                    description: result.error,
+                    variant: 'destructive',
+                });
+            }
         }
-    }
+
+        if (result?.url) {
+            router.replace('/');
+        }
+    };
 
     return (
         <main className='flex h-[30rem] justify-center items-center'>

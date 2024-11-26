@@ -4,11 +4,15 @@ import * as React from "react"
 import Link from "next/link"
 import { Menu, X, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-
+import { useSession, signOut } from 'next-auth/react';
 import { Button } from "@/components/ui/button"
+import { User } from "next-auth"
 
 
 export function NavbarComponent() {
+  const { data: session } = useSession();
+  const user: User = session?.user;
+
   const [isOpen, setIsOpen] = React.useState(false)
   const { theme, setTheme } = useTheme()
 
@@ -29,20 +33,30 @@ export function NavbarComponent() {
                 >
                   Home
                 </Link>
-                <Link
-                  href="/register"
-                  className="text-foreground hover:bg-foreground/10 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Register
-                </Link>
+                {user?.role == 'admin' &&
+                  <Link
+                    href="/registeruser"
+                    className="text-foreground hover:bg-foreground/10 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Register
+                  </Link>
+                }
               </div>
             </div>
           </div>
           <div className="flex items-center">
-            <div className="hidden md:flex items-center">
-            <Button className="hover:bg-black hover:text-white mr-4" asChild>
-              <Link href="/login">Login</Link>
-            </Button>
+            <div className="hidden md:flex items-center px-7">
+              {session ? (
+                <>
+                  <Button onClick={() => signOut()} variant='destructive'>
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Button className="hover:bg-black hover:text-white mr-4" asChild>
+                  <Link href="/login">Login</Link>
+                </Button>
+              )}
             </div>
             <Button
               variant="ghost"
@@ -78,17 +92,29 @@ export function NavbarComponent() {
             >
               Home
             </Link>
-            <Link
-              href="/register"
-              className="text-foreground hover:bg-foreground/10 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
-            >
-              Register
-            </Link>
+            {user?.role == 'admin' &&
+              <Link
+                href="/registeruser"
+                className="text-foreground hover:bg-foreground/10 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Register
+              </Link>
+            }
           </div>
           <div className="pt-3 pb-3 border-t border-foreground/10">
-            <Button className="hover:bg-black hover:text-white px-10" asChild>
-              <Link href="/login">Login</Link>
-            </Button>
+
+
+            {session ? (
+              <>
+                <Button onClick={() => signOut()} className="px-10" variant='destructive'>
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button className="hover:bg-black hover:text-white px-10" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+            )}
           </div>
         </div>
       )}

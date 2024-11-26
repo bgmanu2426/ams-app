@@ -3,6 +3,10 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { NavbarComponent } from "@/components/navbar";
+import { getServerSession } from "next-auth";
+import SessionProvider from "@/context/SessionProvider";
+import { Toaster } from '@/components/ui/toaster';
+
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,28 +29,32 @@ export const metadata: Metadata = {
   keywords: ["Attendance", "Management", "System", "React", "Next.js", "TailwindCSS"],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession();
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+      <SessionProvider session={session}>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <div className="flex flex-col m-6">
-            <NavbarComponent />
-          </div>
-          {children}
-        </ThemeProvider>
-      </body>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="flex flex-col m-6">
+              <NavbarComponent />
+            </div>
+            {children}
+          </ThemeProvider>
+          <Toaster />
+        </body>
+      </SessionProvider>
     </html>
   );
 }
