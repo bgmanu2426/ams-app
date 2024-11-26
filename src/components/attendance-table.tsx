@@ -22,6 +22,7 @@ import {
 import { Search } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { User } from "next-auth";
+import axios from 'axios';
 
 export function AttendanceTableComponent() {
   const { data: session } = useSession();
@@ -43,12 +44,11 @@ export function AttendanceTableComponent() {
   useEffect(() => {
     const fetchAttendanceData = async () => {
       try {
-        const response = await fetch(`/api/user/${user.uid}`);
-        const data = await response.json();
-        if (data.success) {
-          setAttendanceRecords(data.attendanceData);
+        const response = await axios.post('/api/attendance', {uid : user?.uid});
+        if (response.data.success) {
+          setAttendanceRecords(response.data.attendanceData);
         } else {
-          console.error('Error fetching attendance data:', data.message);
+          console.error('Error fetching attendance data:', response.data.message);
         }
       } catch (error) {
         console.error('Error fetching attendance data:', error);
