@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -8,9 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -19,65 +18,47 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
-import { Search } from 'lucide-react'
-
-const attendanceRecords = [
-  {
-    id: 1,
-    name: "John Doe",
-    usn: "1MS21CS001",
-    entryDate: "2023-10-19",
-    entryTime: "09:15:00",
-    uniqueId: "JD001",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    usn: "1MS21CS002",
-    entryDate: "2023-10-19",
-    entryTime: "09:20:00",
-    uniqueId: "JS002",
-  },
-  {
-    id: 3,
-    name: "Bob Johnson",
-    usn: "1MS21CS003",
-    entryDate: "2023-10-19",
-    entryTime: "09:25:00",
-    uniqueId: "BJ003",
-  },
-  {
-    id: 4,
-    name: "Alice Brown",
-    usn: "1MS21CS004",
-    entryDate: "2023-10-19",
-    entryTime: "09:30:00",
-    uniqueId: "AB004",
-  },
-  {
-    id: 5,
-    name: "Charlie Davis",
-    usn: "1MS21CS005",
-    entryDate: "2023-10-19",
-    entryTime: "09:35:00",
-    uniqueId: "CD005",
-  },
-  {
-    id: 6,
-    name: "Charlie Davis",
-    usn: "1MS21CS005",
-    entryDate: "2023-10-19",
-    entryTime: "09:35:00",
-    uniqueId: "CD005",
-  },
-  // Add more mock data as needed
-]
+} from "@/components/ui/pagination";
+import { Search } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { User } from "next-auth";
 
 export function AttendanceTableComponent() {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [recordsPerPage, setRecordsPerPage] = useState(5)
+  const { data: session } = useSession();
+  const user: User = session?.user;
+
+  interface AttendanceRecord {
+    name: string;
+    usn: string;
+    entryDate: string;
+    entryTime: string;
+    uid: string;
+  }
+
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [recordsPerPage, setRecordsPerPage] = useState(5);
+
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      try {
+        const response = await fetch(`/api/user/${user.uid}`);
+        const data = await response.json();
+        if (data.success) {
+          setAttendanceRecords(data.attendanceData);
+        } else {
+          console.error('Error fetching attendance data:', data.message);
+        }
+      } catch (error) {
+        console.error('Error fetching attendance data:', error);
+      }
+    };
+
+    if (user?.uid) {
+      fetchAttendanceData();
+    }
+  }, [user]);
 
   const filteredRecords = attendanceRecords.filter((record) =>
     Object.values(record).some(
@@ -85,21 +66,21 @@ export function AttendanceTableComponent() {
         typeof value === 'string' &&
         value.toLowerCase().includes(searchTerm.toLowerCase())
     )
-  )
+  );
 
-  const indexOfLastRecord = currentPage * recordsPerPage
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage
-  const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord)
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
 
-  const totalPages = Math.ceil(filteredRecords.length / recordsPerPage)
+  const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
+    setCurrentPage(page);
+  };
 
   const renderPaginationItems = () => {
-    const items = []
-    const maxVisiblePages = 5
+    const items = [];
+    const maxVisiblePages = 5;
 
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
@@ -109,7 +90,7 @@ export function AttendanceTableComponent() {
               {i}
             </PaginationLink>
           </PaginationItem>
-        )
+        );
       }
     } else {
       items.push(
@@ -118,14 +99,14 @@ export function AttendanceTableComponent() {
             1
           </PaginationLink>
         </PaginationItem>
-      )
+      );
 
       if (currentPage > 3) {
-        items.push(<PaginationEllipsis key="ellipsis-start" />)
+        items.push(<PaginationEllipsis key="ellipsis-start" />);
       }
 
-      const start = Math.max(2, currentPage - 1)
-      const end = Math.min(totalPages - 1, currentPage + 1)
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
 
       for (let i = start; i <= end; i++) {
         items.push(
@@ -134,11 +115,11 @@ export function AttendanceTableComponent() {
               {i}
             </PaginationLink>
           </PaginationItem>
-        )
+        );
       }
 
       if (currentPage < totalPages - 2) {
-        items.push(<PaginationEllipsis key="ellipsis-end" />)
+        items.push(<PaginationEllipsis key="ellipsis-end" />);
       }
 
       items.push(
@@ -147,11 +128,11 @@ export function AttendanceTableComponent() {
             {totalPages}
           </PaginationLink>
         </PaginationItem>
-      )
+      );
     }
 
-    return items
-  }
+    return items;
+  };
 
   return (
     <div className="space-y-4">
@@ -193,13 +174,13 @@ export function AttendanceTableComponent() {
         </TableHeader>
         <TableBody>
           {currentRecords.map((record, index) => (
-            <TableRow key={record.id}>
+            <TableRow key={index}>
               <TableCell>{indexOfFirstRecord + index + 1}</TableCell>
               <TableCell>{record.name}</TableCell>
               <TableCell>{record.usn}</TableCell>
               <TableCell>{record.entryDate}</TableCell>
               <TableCell>{record.entryTime}</TableCell>
-              <TableCell>{record.uniqueId}</TableCell>
+              <TableCell>{record.uid}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -221,5 +202,5 @@ export function AttendanceTableComponent() {
         </Pagination>
       </div>
     </div>
-  )
+  );
 }
