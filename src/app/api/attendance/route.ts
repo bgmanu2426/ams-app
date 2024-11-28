@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import dbConnect from '@/lib/dbConnect'; // Import your database connection function
 import UserModel from '@/models/user.model';
 
 export async function POST(request: NextRequest) {
     try {
+        // Establish database connection
+        await dbConnect();
+
         // Parse the request body
         const body = await request.json();
-        const { uid } = body;
+        const { uid, role } = body;
 
         if (!uid) {
             return NextResponse.json(
@@ -14,8 +18,17 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        let attendanceData;
         // Fetch the attendance data from the database
-        const attendanceData = await UserModel.findOne({ uid }, 'attendanceData');
+        if (role === 'user') {
+            const user = await UserModel.findOne({ uid }).select('attendanceData');
+            if (user) {
+                attendanceData = user.attendanceData;
+            }
+        } else if (role === 'admin') {
+            const users = await UserModel.find({}).select('attendanceData');
+            attendanceData = users.flatMap((user) => user.attendanceData);
+        }
 
         if (!attendanceData) {
             return NextResponse.json(
@@ -25,10 +38,9 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json(
-            { success: true, attendanceData: attendanceData.attendanceData },
+            { success: true, attendanceData },
             { status: 200 }
         );
-
     } catch (error) {
         console.error('Error fetching attendance data:', error);
         return NextResponse.json(

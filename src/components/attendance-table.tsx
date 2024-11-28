@@ -44,7 +44,7 @@ export function AttendanceTableComponent() {
   useEffect(() => {
     const fetchAttendanceData = async () => {
       try {
-        const response = await axios.post('/api/attendance', {uid : user?.uid});
+        const response = await axios.post('/api/attendance', { uid: user?.uid, role : user?.role });
         if (response.data.success) {
           setAttendanceRecords(response.data.attendanceData);
         } else {
@@ -57,6 +57,9 @@ export function AttendanceTableComponent() {
 
     if (user?.uid) {
       fetchAttendanceData();
+      const intervalId = setInterval(fetchAttendanceData, 1000); // Fetch data every 1 seconds
+
+      return () => clearInterval(intervalId); // Cleanup interval on component unmount
     }
   }, [user]);
 
