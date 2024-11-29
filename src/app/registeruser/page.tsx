@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client"
 
 import {
@@ -52,8 +54,7 @@ const RegisterPage = () => {
                 description: response.data.message,
                 variant: 'default',
             });
-        } catch (error) {
-            console.log(error);
+        } catch (error:any) {
             toast({
                 title: 'Sign Up Failed',
                 description: error.response.data.message,
