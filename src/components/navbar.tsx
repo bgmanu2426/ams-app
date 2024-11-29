@@ -93,12 +93,12 @@ export function NavbarComponent() {
               Home
             </Link>
             {user?.role == 'admin' &&
-              <Link
-                href="/registeruser"
-                className="text-foreground hover:bg-foreground/10 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Register
-              </Link>
+            <Link
+            href="/registeruser"
+            className="text-foreground hover:bg-foreground/10 hover:text-primary block px-5 py-2 rounded-md text-base font-medium"
+          >
+            Register
+          </Link>
             }
           </div>
           <div className="pt-3 pb-3 border-t border-foreground/10">

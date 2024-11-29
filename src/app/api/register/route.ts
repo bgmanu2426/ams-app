@@ -8,7 +8,9 @@ export async function POST(request: Request) {
     try {
         const { name, email, password, usn, role } = await request.json();
 
-        const existingUser = await UserModel.findOne({ email, usn });
+        const existingUser = await UserModel.findOne({
+            $or: [{ email }, { usn }]
+        });
 
         if (existingUser) {
             return new Response(

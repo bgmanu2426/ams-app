@@ -56,7 +56,7 @@ const RegisterPage = () => {
             console.log(error);
             toast({
                 title: 'Sign Up Failed',
-                description: "Failed to submit the form. Please try again.",
+                description: error.response.data.message,
                 variant: 'destructive',
             });
         }
@@ -130,7 +130,12 @@ const RegisterPage = () => {
                                     <Input
                                         placeholder="1XX20XX000"
                                         type="text"
-                                        {...field} />
+                                        {...field}
+                                        onChange={(e) => {
+                                            const upperCaseValue = e.target.value.toUpperCase();
+                                            field.onChange(upperCaseValue);
+                                        }}
+                                        />
                                 </FormControl>
 
                                 <FormMessage />
