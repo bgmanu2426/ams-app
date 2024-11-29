@@ -161,7 +161,6 @@ export function AttendanceTableComponent() {
             <option value={10}>10</option>
             <option value={20}>20</option>
           </select>
-          <span className="text-sm text-muted-foreground">entries</span>
         </div>
       </div>
       <Table>
