@@ -1,24 +1,23 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { Menu, X, Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import { useSession, signOut } from 'next-auth/react';
-import { Button } from "@/components/ui/button"
-import { User } from "next-auth"
-
+import * as React from "react";
+import Link from "next/link";
+import { Menu, X, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useSession, signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { User } from "next-auth";
 
 export function NavbarComponent() {
   const { data: session } = useSession();
   const user: User = session?.user;
 
-  const [isOpen, setIsOpen] = React.useState(false)
-  const { theme, setTheme } = useTheme()
+  const [isOpen, setIsOpen] = React.useState(false);
+  const { theme, setTheme } = useTheme();
 
   const toggleMenu = () => {
-    setIsOpen(!isOpen)
-  }
+    setIsOpen(!isOpen);
+  };
 
   return (
     <nav className="bg-background">
@@ -33,14 +32,14 @@ export function NavbarComponent() {
                 >
                   Home
                 </Link>
-                {user?.role == 'admin' &&
+                {user?.role == "admin" && (
                   <Link
                     href="/registeruser"
                     className="text-foreground hover:bg-foreground/10 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
                   >
                     Register
                   </Link>
-                }
+                )}
               </div>
             </div>
           </div>
@@ -48,12 +47,15 @@ export function NavbarComponent() {
             <div className="hidden md:flex items-center px-7">
               {session ? (
                 <>
-                  <Button onClick={() => signOut()} variant='destructive'>
+                  <Button onClick={() => signOut()} variant="destructive">
                     Logout
                   </Button>
                 </>
               ) : (
-                <Button className="hover:bg-black hover:text-white mr-4" asChild>
+                <Button
+                  className="hover:bg-black hover:text-white mr-4"
+                  asChild
+                >
                   <Link href="/login">Login</Link>
                 </Button>
               )}
@@ -69,8 +71,16 @@ export function NavbarComponent() {
               <span className="sr-only">Toggle theme</span>
             </Button>
             <div className="-mr-2 flex md:hidden">
-              <Button variant="ghost" size="icon" onClick={toggleMenu} aria-label="Toggle menu" className="text-foreground transition-all duration-300 ease-in-out">
-                <div className={`transform transition-all duration-300 ease-in-out ${isOpen ? 'rotate-90' : 'rotate-0'}`}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleMenu}
+                aria-label="Toggle menu"
+                className="text-foreground transition-all duration-300 ease-in-out"
+              >
+                <div
+                  className={`transform transition-all duration-300 ease-in-out ${isOpen ? "rotate-90" : "rotate-0"}`}
+                >
                   {isOpen ? (
                     <X className="h-6 w-6" />
                   ) : (
@@ -89,24 +99,28 @@ export function NavbarComponent() {
             <Link
               href="/"
               className="text-foreground hover:bg-foreground/10 hover:text-primary block px-5 py-2 rounded-md text-base font-medium"
+              onClick={toggleMenu}
             >
               Home
             </Link>
-            {user?.role == 'admin' &&
-            <Link
-            href="/registeruser"
-            className="text-foreground hover:bg-foreground/10 hover:text-primary block px-5 py-2 rounded-md text-base font-medium"
-          >
-            Register
-          </Link>
-            }
+            {user?.role == "admin" && (
+              <Link
+                href="/registeruser"
+                className="text-foreground hover:bg-foreground/10 hover:text-primary block px-5 py-2 rounded-md text-base font-medium"
+                onClick={toggleMenu}
+              >
+                Register
+              </Link>
+            )}
           </div>
           <div className="pt-3 pb-3 border-t border-foreground/10">
-
-
             {session ? (
               <>
-                <Button onClick={() => signOut()} className="px-10" variant='destructive'>
+                <Button
+                  onClick={() => signOut()}
+                  className="px-10"
+                  variant="destructive"
+                >
                   Logout
                 </Button>
               </>
@@ -119,5 +133,5 @@ export function NavbarComponent() {
         </div>
       )}
     </nav>
-  )
+  );
 }

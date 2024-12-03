@@ -1,21 +1,21 @@
-import { NextRequest } from 'next/server';
-import dbConnect from '@/lib/dbConnect';
-import UserModel from '@/models/user.model';
+import { NextRequest } from "next/server";
+import dbConnect from "@/lib/dbConnect";
+import UserModel from "@/models/user.model";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const uid = searchParams.get('uid');
-  const role = searchParams.get('role');
+  const uid = searchParams.get("uid");
+  const role = searchParams.get("role");
 
   if (!uid || !role) {
-    return new Response('UID and role are required', { status: 400 });
+    return new Response("UID and role are required", { status: 400 });
   }
 
   // Set SSE headers
   const headers = new Headers({
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
   });
 
   const stream = new ReadableStream({
@@ -28,13 +28,15 @@ export async function GET(request: NextRequest) {
         let attendanceData;
 
         try {
-          if (role === 'user') {
-            const user = await UserModel.findOne({ uid }).select('attendanceData');
+          if (role === "user") {
+            const user = await UserModel.findOne({ uid }).select(
+              "attendanceData"
+            );
             if (user) {
               attendanceData = user.attendanceData;
             }
-          } else if (role === 'admin') {
-            const users = await UserModel.find({}).select('attendanceData');
+          } else if (role === "admin") {
+            const users = await UserModel.find({}).select("attendanceData");
             attendanceData = users.flatMap((user) => user.attendanceData);
           }
 
@@ -43,8 +45,10 @@ export async function GET(request: NextRequest) {
             controller.enqueue(`data: ${data}\n\n`);
           }
         } catch (error) {
-          console.error('Error fetching attendance data:', error);
-          const errorData = JSON.stringify({ error: 'Error fetching attendance data' });
+          console.error("Error fetching attendance data:", error);
+          const errorData = JSON.stringify({
+            error: "Error fetching attendance data",
+          });
           controller.enqueue(`data: ${errorData}\n\n`);
         }
       };
@@ -53,16 +57,16 @@ export async function GET(request: NextRequest) {
       await sendAttendanceData();
 
       // Set up MongoDB change stream to listen for database updates
-      const pipeline = [{ $match: { 'operationType': 'update' } }];
+      const pipeline = [{ $match: { operationType: "update" } }];
       const changeStream = UserModel.watch(pipeline);
 
-      changeStream.on('change', async () => {
+      changeStream.on("change", async () => {
         // When a change occurs, send updated data
         await sendAttendanceData();
       });
 
       // Clean up when the connection is closed
-      request.signal.addEventListener('abort', () => {
+      request.signal.addEventListener("abort", () => {
         changeStream.close();
         controller.close();
       });

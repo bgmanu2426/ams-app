@@ -1,8 +1,6 @@
-// src/components/attendance-table.tsx
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -21,8 +19,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Search } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { Search } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { User } from "next-auth";
 
 export function AttendanceTableComponent() {
@@ -37,14 +35,41 @@ export function AttendanceTableComponent() {
     uid: string;
   }
 
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<
+    AttendanceRecord[]
+  >([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [recordsPerPage, setRecordsPerPage] = useState(5);
 
   useEffect(() => {
     if (user?.uid && user?.role) {
-      const eventSource = new EventSource(`/api/attendance?uid=${user.uid}&role=${user.role}`);
+      // Fetch initial data
+      const fetchAttendanceData = async () => {
+        try {
+          const response = await axios.get("/api/attendance", {
+            params: {
+              uid: user.uid,
+              role: user.role,
+            },
+          });
+          if (response.data.success) {
+            setAttendanceRecords(response.data.attendanceData);
+          } else {
+            console.error(
+              "Error fetching attendance data:",
+              response.data.message
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching attendance data:", error);
+        }
+      };
+      fetchAttendanceData();
+
+      const eventSource = new EventSource(
+        `/api/attendance?uid=${user.uid}&role=${user.role}`
+      );
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -56,7 +81,7 @@ export function AttendanceTableComponent() {
       };
 
       eventSource.onerror = (error) => {
-        console.error('EventSource failed:', error);
+        console.error("EventSource failed:", error);
         eventSource.close();
       };
 
@@ -67,18 +92,20 @@ export function AttendanceTableComponent() {
   }, [user]);
 
   // Filter, pagination, and render logic...
-
   const filteredRecords = attendanceRecords.filter((record) =>
     Object.values(record).some(
       (value) =>
-        typeof value === 'string' &&
+        typeof value === "string" &&
         value.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
+  const currentRecords = filteredRecords.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
 
   const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
 
@@ -94,7 +121,10 @@ export function AttendanceTableComponent() {
       for (let i = 1; i <= totalPages; i++) {
         items.push(
           <PaginationItem key={i}>
-            <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
+            <PaginationLink
+              onClick={() => handlePageChange(i)}
+              isActive={currentPage === i}
+            >
               {i}
             </PaginationLink>
           </PaginationItem>
@@ -103,7 +133,10 @@ export function AttendanceTableComponent() {
     } else {
       items.push(
         <PaginationItem key={1}>
-          <PaginationLink onClick={() => handlePageChange(1)} isActive={currentPage === 1}>
+          <PaginationLink
+            onClick={() => handlePageChange(1)}
+            isActive={currentPage === 1}
+          >
             1
           </PaginationLink>
         </PaginationItem>
@@ -119,7 +152,10 @@ export function AttendanceTableComponent() {
       for (let i = start; i <= end; i++) {
         items.push(
           <PaginationItem key={i}>
-            <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
+            <PaginationLink
+              onClick={() => handlePageChange(i)}
+              isActive={currentPage === i}
+            >
               {i}
             </PaginationLink>
           </PaginationItem>
@@ -132,7 +168,10 @@ export function AttendanceTableComponent() {
 
       items.push(
         <PaginationItem key={totalPages}>
-          <PaginationLink onClick={() => handlePageChange(totalPages)} isActive={currentPage === totalPages}>
+          <PaginationLink
+            onClick={() => handlePageChange(totalPages)}
+            isActive={currentPage === totalPages}
+          >
             {totalPages}
           </PaginationLink>
         </PaginationItem>
@@ -195,16 +234,24 @@ export function AttendanceTableComponent() {
       </Table>
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
-          Showing {indexOfFirstRecord + 1} to {Math.min(indexOfLastRecord, filteredRecords.length)} of {filteredRecords.length} entries
+          Showing {indexOfFirstRecord + 1} to{" "}
+          {Math.min(indexOfLastRecord, filteredRecords.length)} of{" "}
+          {filteredRecords.length} entries
         </div>
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious onClick={() => handlePageChange(Math.max(1, currentPage - 1))} />
+              <PaginationPrevious
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              />
             </PaginationItem>
             {renderPaginationItems()}
             <PaginationItem>
-              <PaginationNext onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))} />
+              <PaginationNext
+                onClick={() =>
+                  handlePageChange(Math.min(totalPages, currentPage + 1))
+                }
+              />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

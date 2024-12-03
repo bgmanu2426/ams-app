@@ -1,7 +1,6 @@
 export const emailRegexPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex pattern for email validation
 export const passwordRegexPattern: RegExp =
-    /^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}/; // Regex pattern for password validation
-
+  /^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}/; // Regex pattern for password validation
 
 const timestamp = Date.now(); // Get the current timestamp in milliseconds
 const date = new Date(timestamp); // Create a Date object using the timestamp
@@ -15,7 +14,7 @@ const minutes = date.getMinutes();
 const seconds = date.getSeconds();
 
 // Format the date as a string (e.g., "DD-MM-YYYY")
-export const formattedDate = `${day.toString().padStart(2, '0')}-${month.toString().padStart(2, '0')}-${year}`;
+export const formattedDate = `${day.toString().padStart(2, "0")}-${month.toString().padStart(2, "0")}-${year}`;
 
 // Format the time as a string (e.g., "HH-MM-SS")
-export const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+export const formattedTime = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;

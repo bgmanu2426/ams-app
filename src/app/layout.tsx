@@ -1,12 +1,11 @@
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme-provider";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { NavbarComponent } from "@/components/navbar";
 import { getServerSession } from "next-auth";
 import SessionProvider from "@/context/SessionProvider";
-import { Toaster } from '@/components/ui/toaster';
-
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -21,12 +20,20 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Attendance Management System",
-  description: "A simple attendance management system which allows users to register and track their attendance.",
+  description:
+    "A simple attendance management system which allows users to register and track their attendance.",
   authors: {
     url: "https://github.com/bgmanu2426",
-    name: "Manu BG"
+    name: "Manu BG",
   },
-  keywords: ["Attendance", "Management", "System", "React", "Next.js", "TailwindCSS"],
+  keywords: [
+    "Attendance",
+    "Management",
+    "System",
+    "React",
+    "Next.js",
+    "TailwindCSS",
+  ],
 };
 
 export default async function RootLayout({
