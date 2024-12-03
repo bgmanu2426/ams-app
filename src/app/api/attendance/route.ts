@@ -1,51 +1,73 @@
-import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/dbConnect'; // Import your database connection function
+import { NextRequest } from 'next/server';
+import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/models/user.model';
 
-export async function POST(request: NextRequest) {
-    try {
-        // Establish database connection
-        await dbConnect();
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const uid = searchParams.get('uid');
+  const role = searchParams.get('role');
 
-        // Parse the request body
-        const body = await request.json();
-        const { uid, role } = body;
+  if (!uid || !role) {
+    return new Response('UID and role are required', { status: 400 });
+  }
 
-        if (!uid) {
-            return NextResponse.json(
-                { success: false, message: 'UID is required' },
-                { status: 400 }
-            );
-        }
+  // Set SSE headers
+  const headers = new Headers({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  });
 
+  const stream = new ReadableStream({
+    async start(controller) {
+      // Connect to the database
+      await dbConnect();
+
+      // Function to fetch and send attendance data
+      const sendAttendanceData = async () => {
         let attendanceData;
-        // Fetch the attendance data from the database
-        if (role === 'user') {
+
+        try {
+          if (role === 'user') {
             const user = await UserModel.findOne({ uid }).select('attendanceData');
             if (user) {
-                attendanceData = user.attendanceData;
+              attendanceData = user.attendanceData;
             }
-        } else if (role === 'admin') {
+          } else if (role === 'admin') {
             const users = await UserModel.find({}).select('attendanceData');
             attendanceData = users.flatMap((user) => user.attendanceData);
-        }
+          }
 
-        if (!attendanceData) {
-            return NextResponse.json(
-                { success: false, message: 'No attendance data found' },
-                { status: 404 }
-            );
+          if (attendanceData) {
+            const data = JSON.stringify({ attendanceData });
+            controller.enqueue(`data: ${data}\n\n`);
+          }
+        } catch (error) {
+          console.error('Error fetching attendance data:', error);
+          const errorData = JSON.stringify({ error: 'Error fetching attendance data' });
+          controller.enqueue(`data: ${errorData}\n\n`);
         }
+      };
 
-        return NextResponse.json(
-            { success: true, attendanceData },
-            { status: 200 }
-        );
-    } catch (error) {
-        console.error('Error fetching attendance data:', error);
-        return NextResponse.json(
-            { success: false, message: 'Internal Server Error' },
-            { status: 500 }
-        );
-    }
+      // Initial data send
+      await sendAttendanceData();
+
+      // Set up MongoDB change stream to listen for database updates
+      const pipeline = [{ $match: { 'operationType': 'update' } }];
+      const changeStream = UserModel.watch(pipeline);
+
+      changeStream.on('change', async () => {
+        // When a change occurs, send updated data
+        await sendAttendanceData();
+      });
+
+      // Clean up when the connection is closed
+      request.signal.addEventListener('abort', () => {
+        changeStream.close();
+        controller.close();
+      });
+    },
+  });
+
+  return new Response(stream, { headers });
 }

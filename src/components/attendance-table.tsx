@@ -1,4 +1,6 @@
-'use client'
+// src/components/attendance-table.tsx
+
+'use client';
 
 import { useState, useEffect } from 'react';
 import {
@@ -22,7 +24,6 @@ import {
 import { Search } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { User } from "next-auth";
-import axios from 'axios';
 
 export function AttendanceTableComponent() {
   const { data: session } = useSession();
@@ -42,26 +43,30 @@ export function AttendanceTableComponent() {
   const [recordsPerPage, setRecordsPerPage] = useState(5);
 
   useEffect(() => {
-    const fetchAttendanceData = async () => {
-      try {
-        const response = await axios.post('/api/attendance', { uid: user?.uid, role : user?.role });
-        if (response.data.success) {
-          setAttendanceRecords(response.data.attendanceData);
-        } else {
-          console.error('Error fetching attendance data:', response.data.message);
+    if (user?.uid && user?.role) {
+      const eventSource = new EventSource(`/api/attendance?uid=${user.uid}&role=${user.role}`);
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.attendanceData) {
+          setAttendanceRecords(data.attendanceData);
+        } else if (data.error) {
+          console.error(data.error);
         }
-      } catch (error) {
-        console.error('Error fetching attendance data:', error);
-      }
-    };
+      };
 
-    if (user?.uid) {
-      fetchAttendanceData();
-      const intervalId = setInterval(fetchAttendanceData, 1000); // Fetch data every 1 seconds
+      eventSource.onerror = (error) => {
+        console.error('EventSource failed:', error);
+        eventSource.close();
+      };
 
-      return () => clearInterval(intervalId); // Cleanup interval on component unmount
+      return () => {
+        eventSource.close();
+      };
     }
   }, [user]);
+
+  // Filter, pagination, and render logic...
 
   const filteredRecords = attendanceRecords.filter((record) =>
     Object.values(record).some(
@@ -161,6 +166,7 @@ export function AttendanceTableComponent() {
             <option value={10}>10</option>
             <option value={20}>20</option>
           </select>
+          <span className="text-sm text-muted-foreground">entries</span>
         </div>
       </div>
       <Table>
