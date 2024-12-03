@@ -22,6 +22,7 @@ import {
 import { Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { User } from "next-auth";
+import axios from "axios";
 
 export function AttendanceTableComponent() {
   const { data: session } = useSession();
