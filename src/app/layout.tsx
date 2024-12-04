@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { NavbarComponent } from "@/components/navbar";
-import { getServerSession } from "next-auth";
 import SessionProvider from "@/context/SessionProvider";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -41,13 +40,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession();
   return (
-    <html lang="en">
-      <SessionProvider session={session}>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <SessionProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -60,8 +58,8 @@ export default async function RootLayout({
             {children}
           </ThemeProvider>
           <Toaster />
-        </body>
-      </SessionProvider>
+        </SessionProvider>
+      </body>
     </html>
   );
 }

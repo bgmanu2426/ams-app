@@ -25,7 +25,7 @@ import { User } from "next-auth";
 import axios from "axios";
 
 export function AttendanceTableComponent() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const user: User = session?.user;
 
   interface AttendanceRecord {
@@ -44,7 +44,7 @@ export function AttendanceTableComponent() {
   const [recordsPerPage, setRecordsPerPage] = useState(5);
 
   useEffect(() => {
-    if (user?.uid && user?.role) {
+    if (status === "authenticated" && user?.uid && user?.role) {
       // Fetch initial data
       const fetchAttendanceData = async () => {
         try {
@@ -90,7 +90,7 @@ export function AttendanceTableComponent() {
         eventSource.close();
       };
     }
-  }, [user]);
+  }, [status, user]);
 
   // Filter, pagination, and render logic...
   const filteredRecords = attendanceRecords.filter((record) =>
