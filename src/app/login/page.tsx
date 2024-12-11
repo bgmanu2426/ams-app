@@ -25,6 +25,7 @@ import { passwordRegexPattern } from "@/lib/utilities";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { signIn } from "next-auth/react";
+import { useState } from "react";
 
 // Improved schema with additional validation rules
 const formSchema = z.object({
@@ -40,6 +41,8 @@ const formSchema = z.object({
 const LoginPage = () => {
   const router = useRouter();
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,6 +53,7 @@ const LoginPage = () => {
 
   const { toast } = useToast();
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
     const result = await signIn("credentials", {
       redirect: false,
       email: data.email,
@@ -71,6 +75,7 @@ const LoginPage = () => {
         });
       }
     }
+    setIsLoading(false);
 
     if (result?.url) {
       router.replace("/");
@@ -133,9 +138,15 @@ const LoginPage = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full">
-                    Login
-                  </Button>
+                  {isLoading ? (
+                    <Button type="submit" className="w-full" disabled>
+                      Processing...
+                    </Button>
+                  ) : (
+                    <Button type="submit" className="w-full">
+                      Login
+                    </Button>
+                  )}
                 </div>
               </form>
             </Form>

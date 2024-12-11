@@ -42,8 +42,10 @@ export function AttendanceTableComponent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [recordsPerPage, setRecordsPerPage] = useState(5);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    setIsLoading(true);
     if (status === "authenticated" && user?.uid && user?.role) {
       // Fetch initial data
       const fetchAttendanceData = async () => {
@@ -56,6 +58,7 @@ export function AttendanceTableComponent() {
           });
           if (response.data.success) {
             setAttendanceRecords(response.data.attendanceData);
+            setIsLoading(false);
           } else {
             console.error(
               "Error fetching attendance data:",
@@ -76,6 +79,7 @@ export function AttendanceTableComponent() {
         const data = JSON.parse(event.data);
         if (data.attendanceData) {
           setAttendanceRecords(data.attendanceData);
+          setIsLoading(false);
         } else if (data.error) {
           console.error(data.error);
         }
@@ -209,30 +213,50 @@ export function AttendanceTableComponent() {
           <span className="text-sm text-muted-foreground">entries</span>
         </div>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[50px]">Sl. No</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>USN</TableHead>
-            <TableHead>Entry Date</TableHead>
-            <TableHead>Entry Time</TableHead>
-            <TableHead>Unique ID</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentRecords.map((record, index) => (
-            <TableRow key={index}>
-              <TableCell>{indexOfFirstRecord + index + 1}</TableCell>
-              <TableCell>{record.name}</TableCell>
-              <TableCell>{record.usn}</TableCell>
-              <TableCell>{record.entryDate}</TableCell>
-              <TableCell>{record.entryTime}</TableCell>
-              <TableCell>{record.uid}</TableCell>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center h-64">
+          <div className="text-2xl font-bold mb-4">Loading</div>
+          <div className="flex space-x-2">
+            <div
+              className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"
+              style={{ animationDelay: "0s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"
+              style={{ animationDelay: "0.2s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"
+              style={{ animationDelay: "0.4s" }}
+            ></div>
+          </div>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">Sl. No</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>USN</TableHead>
+              <TableHead>Entry Date</TableHead>
+              <TableHead>Entry Time</TableHead>
+              <TableHead>Unique ID</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {currentRecords.map((record, index) => (
+              <TableRow key={index}>
+                <TableCell>{indexOfFirstRecord + index + 1}</TableCell>
+                <TableCell>{record.name}</TableCell>
+                <TableCell>{record.usn}</TableCell>
+                <TableCell>{record.entryDate}</TableCell>
+                <TableCell>{record.entryTime}</TableCell>
+                <TableCell>{record.uid}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
           Showing {indexOfFirstRecord + 1} to{" "}
