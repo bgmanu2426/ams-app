@@ -103,30 +103,29 @@ void SendCardID(String Card_uid) {
       display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
       display.drawString(64, 30, "Internal Server ERROR");
       display.display();
-      delay(3000);
+      delay(2000);
     } else if (httpCode == 200 || httpCode == 201) {
       display.clear();
       display.setFont(ArialMT_Plain_10);
       display.setTextAlignment(TEXT_ALIGN_LEFT);
       display.drawStringMaxWidth(10, 10, 128, payload);
       display.display();
-      delay(3000);
+      delay(2000);
     } else if (httpCode == 404) {
       display.clear();
       display.setFont(ArialMT_Plain_10);
       display.setTextAlignment(TEXT_ALIGN_LEFT);
       display.drawStringMaxWidth(10, 10, 128, payload);
       display.display();
-      delay(3000);
+      delay(2000);
     } else {
       display.clear();
       display.setFont(ArialMT_Plain_10);
       display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
       display.drawString(64, 30, "HTTP ERROR :" + String(httpCode));
       display.display();
-      delay(3000);
+      delay(2000);
     }
-    http.end();
   }
 }
 
