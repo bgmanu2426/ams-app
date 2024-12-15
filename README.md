@@ -31,11 +31,7 @@ The goal of this project is to develop an RFID-based attendance management syste
 ### Hardware Setup
 1. **Connect the RFID RC522 Reader** to the ESP32 microcontroller.
 2. **Connect the OLED Display** to the ESP32 microcontroller.
-3. **Configure Wi-Fi** credentials in the 
-
-secrets.h
-
- file.
+3. **Configure Wi-Fi** credentials in the `secrets.h` file.
 4. **Upload the Arduino code** to the ESP32 microcontroller.
 
 ### Arduino Code
